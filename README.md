@@ -1,2 +1,0 @@
-# Lulocu.github.io
-GPC
