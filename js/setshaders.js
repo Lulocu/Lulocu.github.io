@@ -28,4 +28,4 @@ function makeShader(src, type)
 		alert("Error compiling shader: " + gl.getShaderInfoLog(shader));
 	}
 	return shader;
-}
+} 
