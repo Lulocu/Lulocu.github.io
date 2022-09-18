@@ -6,7 +6,7 @@
 const VSHADER_SOURCE = `
     attribute vec3 posicion;
     void main(){
-        gl_Position = vec4(posicion,1.0 * canvas.width);
+        gl_Position = vec4(posicion,1.0);
         gl_PointSize = 10.0;
     }
 `
