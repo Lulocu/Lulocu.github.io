@@ -1,0 +1,54 @@
+<!--
+    Pagina de carga de una aplicacin basica en Threejs
+-->
+<html lang="es"><head>
+    <meta charset="utf-8">
+    <title> Aplicacion basica en Threejs </title>
+    <style>
+        body{ background-color: white;
+              margin: 0px;
+              overflow: hidden;
+            }
+        #info{
+            position: absolute;
+            bottom: 0px;
+            left: 50px;
+            width: 30%;
+            text-align: left;
+            z-index: 1;
+        }    
+    </style>
+</head>
+<body><html lang="es"><head>
+    <meta charset="utf-8">
+    <title> Aplicacion basica en Threejs </title>
+    <style>
+        body{ background-color: white;
+              margin: 0px;
+              overflow: hidden;
+            }
+        #info{
+            position: absolute;
+            bottom: 0px;
+            left: 50px;
+            width: 30%;
+            text-align: left;
+            z-index: 1;
+        }    
+    </style>
+</head>
+<body>
+    <div id="container"><canvas data-engine="three.js r140" width="1848" height="984" style="display: block; width: 1848px; height: 984px;"></canvas></div>
+    <div id="info">
+        <h2>Threejs basic example</h2>
+    </div>
+
+    <!-- Declaracion del espacio de nombres de Threejs -->
+    <script type="importmap">
+        { "imports": { "three": "./lib/three.module.js" } }
+    </script>
+    
+    <!-- mi script -->
+    <script type="module" src="js/Escena.js"></script>
+
+</body></html>
