@@ -91,7 +91,7 @@ function setCameras(ar) {
 function loadScene() {
     // Material sencillo
     const materialSuelo = new THREE.MeshBasicMaterial({ color: 'yellow', wireframe: true });
-    const materialRobot = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: true });
+    const materialRobot = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
 
     // Suelo
     let suelo = crearSuelo(1000, 1000, materialRobot)
