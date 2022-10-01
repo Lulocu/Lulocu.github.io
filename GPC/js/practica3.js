@@ -77,12 +77,12 @@ function setCameras(ar) {
 
     // Construir las camaras ortograficas
     if (ar > 1) {
-        cenital = new THREE.OrthographicCamera(-L * ar, L * ar, L, -L, -100, 500);
+        cenital = new THREE.OrthographicCamera(-L * ar, L * ar, L, -L, -50, 500);
     }
     else {
-        cenital = new THREE.OrthographicCamera(-L, L, L / ar, -L / ar, -100, 500);
+        cenital = new THREE.OrthographicCamera(-L, L, L / ar, -L / ar, -50, 500);
     }
-    cenital.position.set(0, 300, 0);
+    cenital.position.set(0, 250, 0);
     cenital.lookAt(0, 0, 0);
     cenital.up = new THREE.Vector3(0, -1, 0);
 
