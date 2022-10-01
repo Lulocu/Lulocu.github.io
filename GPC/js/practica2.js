@@ -190,6 +190,7 @@ function crearRobot(material)
         6,7,4, 6,4,5, 1,5,2,
         1,6,5, 7,6,1, 7,1,0
     ]
+    console.log('Normales')
     dedoIzqGeometry.setIndex(indices)
     dedoIzqGeometry.setAttribute('position', new THREE.BufferAttribute(position,3))
     //dedoIzqGeometry.setAttribute('color', new THREE.BufferAttribute(color,3))
@@ -201,7 +202,11 @@ function crearRobot(material)
     pinzaIzq.add(paralelipedo)
     console.log('dedoIzq')
 
-    console.log(pinzaIzq)
+    console.log(dedoIzq)
+    dedoIzqGeometry.computeVertexNormals()
+
+
+
     /*
     console.log('Disco')
 
@@ -217,9 +222,9 @@ function crearRobot(material)
     brazo.add(antebrazo)
     //Fin antebrazo
 
-    console.log('dedoDer')
+    console.log('paralelipedo')
 
-    console.log(pinzaDerecha)
+    console.log(paralelipedo)
 
     robot.add(base)
     robot.add(brazo)
