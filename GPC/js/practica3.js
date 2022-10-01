@@ -118,7 +118,7 @@ function render() {
 
     } else {
         renderer.setViewport(0,window.innerHeight-window.innerWidth/4, window.innerWidth/4,window.innerWidth/4);
-        renderer.render(scene,camera);
+        renderer.render(scene,cenital);
 
     }
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
