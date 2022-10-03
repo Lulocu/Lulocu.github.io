@@ -17,7 +17,7 @@ let renderer, scene, camera;
 // Otras globales
 let cameraControls;
 let cenital
-let L = 100
+let L = 50
 // Acciones
 init();
 loadScene();
@@ -215,14 +215,15 @@ function crearRobot(material) {
         calculateNormal(new THREE.Vector3(1, 15, 19), new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 5, 19)).toArray(), //x   
         calculateNormal(new THREE.Vector3(0, 0, 0), new THREE.Vector3(3, 5, 19), new THREE.Vector3(1, 5, 19)).toArray(), //y
         calculateNormal(new THREE.Vector3(3, 5, 19), new THREE.Vector3(1, 15, 19), new THREE.Vector3(1, 5, 19)).toArray(), //z 
+                //3
+        calculateNormal(new THREE.Vector3(3, 5, 19), new THREE.Vector3(4, 20, 0), new THREE.Vector3(3, 15, 19)).toArray(), //x   
+        calculateNormal(new THREE.Vector3(4, 20, 0), new THREE.Vector3(1, 5, 19), new THREE.Vector3(3, 15, 19)).toArray(), //y
+        calculateNormal(new THREE.Vector3(1, 5, 19), new THREE.Vector3(3, 5, 19), new THREE.Vector3(3, 15, 19)).toArray(), //z 
         //2
         calculateNormal(new THREE.Vector3(1, 5, 19), new THREE.Vector3(0, 20, 0), new THREE.Vector3(1, 15, 19)).toArray(), //x   
         calculateNormal(new THREE.Vector3(0, 20, 0), new THREE.Vector3(3, 15, 19), new THREE.Vector3(1, 15, 19)).toArray(), //y
         calculateNormal(new THREE.Vector3(3, 15, 19), new THREE.Vector3(1, 5, 19), new THREE.Vector3(1, 15, 19)).toArray(), //z 
-        //3
-        calculateNormal(new THREE.Vector3(3, 5, 19), new THREE.Vector3(4, 20, 0), new THREE.Vector3(3, 15, 19)).toArray(), //x   
-        calculateNormal(new THREE.Vector3(4, 20, 0), new THREE.Vector3(1, 5, 19), new THREE.Vector3(3, 15, 19)).toArray(), //y
-        calculateNormal(new THREE.Vector3(1, 5, 19), new THREE.Vector3(3, 5, 19), new THREE.Vector3(3, 15, 19)).toArray(), //z  
+ 
         //4
         calculateNormal(new THREE.Vector3(4, 0, 0), new THREE.Vector3(3, 15, 19), new THREE.Vector3(4, 20, 0)).toArray(), //x   
         calculateNormal(new THREE.Vector3(3, 15, 19), new THREE.Vector3(0, 20, 0), new THREE.Vector3(4, 20, 0)).toArray(), //y
@@ -242,6 +243,7 @@ function crearRobot(material) {
 
     ]
     normal = normal.flat()
+    console.log(new THREE.Float32BufferAttribute(normal, 3))
     dedoIzqGeometry.setIndex(indices)
     dedoIzqGeometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3))
     dedoIzqGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3))
@@ -252,6 +254,7 @@ function crearRobot(material) {
     const materialRojo = new THREE.MeshBasicMaterial({ color: 'red' });
     const dedoIzq = new THREE.Mesh(dedoIzqGeometry, material)
 
+    console.log(dedoIzq)
     dedoIzq.rotation.y = Math.PI / 2
     dedoIzq.position.set(18, 190, -8)
     pinzaIzq.add(dedoIzq)
