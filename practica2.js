@@ -1,23 +1,23 @@
 /**
+ * Escena.js
  * 
- * 
- * Practica3GPC 
+ * Seminario GPC#2. Construir una escena bÃ¡sica con transformaciones e
+ * importaciÃ³n de modelos.
  * 
  * 
  */
 
 // Modulos necesarios
 import * as THREE from "../lib/three.module.js";
-//import {GLTFLoader} from "../lib/GLTFLoader.module.js";
-import { OrbitControls } from "../lib/OrbitControls.module.js";
+import { GLTFLoader } from "../lib/GLTFLoader.module.js";
 
 // Variables estandar
 let renderer, scene, camera;
 
 // Otras globales
-let cameraControls;
-let cenital
-let L = 50
+let esferaCubo;
+let angulo = 0;
+let materialRobot
 // Acciones
 init();
 loadScene();
@@ -28,103 +28,80 @@ function init() {
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('container').appendChild(renderer.domElement);
-    renderer.setClearColor(0xAAAAAA);
-    renderer.autoClear = false;
 
     // Instanciar el nodo raiz de la escena
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0.5, 0.5, 0.5);
 
     // Instanciar la camara
-    const ar = window.innerWidth / window.innerHeight;
-
     camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(130, 350, 100);
-    camera.lookAt(0, 100, 0);
-
-    cameraControls = new OrbitControls(camera, renderer.domElement);
-    cameraControls.target.set(0, 1, 0);
-    camera.lookAt(0, 1, 0);
-    setCameras(ar);
-
-    window.addEventListener('resize', updateAspectRatio);
+    //camera.position.set(130, 350, 100);
+    //camera.lookAt(0, 100, 0);
+    camera.position.set(50, 75, 50);
+    camera.lookAt(0, 0, 0);
 }
-function updateAspectRatio() {
-    // Cambia las dimensiones del canvas
-    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Nuevo relacion aspecto de la camara
-    const ar = window.innerWidth / window.innerHeight;
-
-    // perspectiva
-    camera.aspect = ar;
-    camera.updateProjectionMatrix();
-
-    // ortografica
-    if (ar > 1) {
-        cenital.left = -L * ar;
-        cenital.right = L * ar;
-    }
-    else {
-        cenital.top = L / ar;
-        cenital.bottom = -L / ar;
-    }
-
-
-    cenital.updateProjectionMatrix();
-
-}
-function setCameras(ar) {
-
-    // Construir las camaras ortograficas
-    if (ar > 1) {
-        cenital = new THREE.OrthographicCamera(-L * ar, L * ar, L, -L, -50, 500);
-    }
-    else {
-        cenital = new THREE.OrthographicCamera(-L, L, L / ar, -L / ar, -50, 500);
-    }
-    cenital.position.set(0, 250, 0);
-    cenital.lookAt(0, 0, 0);
-    cenital.up = new THREE.Vector3(0, -1, 0);
-
-
-}
 function loadScene() {
     // Material sencillo
     const materialSuelo = new THREE.MeshBasicMaterial({ color: 'yellow', wireframe: true });
-    const materialRobot = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
+    materialRobot = new THREE.MeshBasicMaterial({ color: 'brown', opacity: 1.0, wireframe: false });
 
     // Suelo
-    let suelo = crearSuelo(1000, 1000, materialRobot)
-    scene.add(suelo)
+    let suelo = crearSuelo(1000, 1000, materialSuelo)
+    //scene.add(suelo)
     //Robot
     let robot = crearRobot(materialRobot)
-    scene.add(robot)
+    //scene.add(robot)
+    /**
+    // Esfera y cubo
+    const esfera = new THREE.Mesh( new THREE.SphereGeometry(1,20,20), material );
+    const cubo = new THREE.Mesh( new THREE.BoxGeometry(2,2,2), material );
+    esfera.position.x = 1;
+    cubo.position.x = -1;
+
+    esferaCubo = new THREE.Object3D();
+    esferaCubo.add(esfera);
+    esferaCubo.add(cubo);
+    esferaCubo.position.y = 1.5;
+
+    scene.add(esferaCubo);
+
+    scene.add( new THREE.AxesHelper(3) );
+    cubo.add( new THREE.AxesHelper(1) );
+
+    // Modelos importados
+    const loader = new THREE.ObjectLoader();
+    loader.load('models/soldado/soldado.json', 
+    function (objeto)
+    {
+        cubo.add(objeto);
+        objeto.position.y = 1;
+    });
+
+    const glloader = new GLTFLoader();
+    glloader.load('models/RobotExpressive.glb',
+    function(objeto)
+    {
+        esfera.add(objeto.scene);
+        objeto.scene.scale.set(0.5,0.5,0.5);
+        objeto.scene.position.y = 1;
+        objeto.scene.rotation.y = -Math.PI/2;
+        console.log("ROBOT");
+        console.log(objeto);
+    });
+    -->
+     */
 }
 
 function update() {
-
+    //angulo += 0.01;
+    //esferaCubo.rotation.y = angulo;
 }
 
 function render() {
     requestAnimationFrame(render);
     update();
-    renderer.clear();
-
-
-    // El S.R. del viewport es left-bottom con X right y Y up
-    if (window.innerHeight < window.innerWidth) {
-        renderer.setViewport(0, 3 * window.innerHeight / 4, window.innerHeight / 4, window.innerHeight / 4);
-        renderer.render(scene, cenital);
-
-    } else {
-        renderer.setViewport(0,window.innerHeight-window.innerWidth/4, window.innerWidth/4,window.innerWidth/4);
-        renderer.render(scene,cenital);
-
-    }
-    renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-
     renderer.render(scene, camera);
-
 }
 
 function crearSuelo(width, height, material) {
@@ -138,7 +115,8 @@ function crearRobot(material) {
     let robot = new THREE.Object3D()
     let base = crearBase(material);
 
-    //const materialDebug = new THREE.MeshBasicMaterial({color:'green',wireframe:true});
+    const materialDebug = new THREE.MeshBasicMaterial({ color: 'green', wireframe: true });
+
 
     //Brazo
     let brazo = new THREE.Object3D()
@@ -148,13 +126,13 @@ function crearRobot(material) {
     rotula.position.set(0, 0, 0)
     brazo.add(rotula)
 
-    let esparragoGeometry = new THREE.BoxBufferGeometry(18, 120, 12, 18 * 2, 120 * 2, 12 * 2)
+    let esparragoGeometry = new THREE.BoxBufferGeometry(18, 120, 12)
     const esparrago = new THREE.Mesh(esparragoGeometry, material)
     esparrago.position.set(0, 60, 0)
     brazo.add(esparrago)
 
 
-    let ejeGeometry = new THREE.SphereBufferGeometry(20, 20 * 2, 20 * 2)
+    let ejeGeometry = new THREE.SphereBufferGeometry(20, 20, 20)
     const eje = new THREE.Mesh(ejeGeometry, material)
     eje.position.set(0, 120, 0)
     brazo.add(eje)
@@ -186,28 +164,43 @@ function crearRobot(material) {
     const paralelipedo = new THREE.Mesh(paralelipedoGeometry, material)
     paralelipedo.position.set(9, 200, -10)
 
-    //Empiezan los cambios
+
 
     const dedoIzqGeometry = new THREE.BufferGeometry()
-    const position =  
-    [
-        4, 20, 0,    0, 20, 0,       3, 15, 19,   1, 15, 19, //  4523 
-        3, 15, 19,   1, 15, 19,      1, 5, 19,    3, 5, 19,//3210 
-        4, 20, 0,    3, 5, 19,       3, 15, 19,   4, 0, 0, //4037 
-        0, 20, 0,    1, 15, 19,      1, 5, 19,    0, 0, 0,//5216
-        4, 20, 0,   0, 20, 0,        0, 0, 0,     4, 0, 0, //4567
-        0, 0, 0,    1, 5, 19,        3, 5, 19,    4, 0, 0 //6107
+    const position = new Float32Array(
+        [
 
-    ]
+            1, 15, 19, 0, 20, 0, 4, 20, 0, 3, 15, 19, // 2 5 4 3 //TOP
+            3, 5, 19, 4, 0, 0, 4, 20, 0, 3, 15, 19, // 0 7 4 3 //FRONT
+            1, 5, 19, 0, 0, 0, 0, 20, 0, 1, 15, 19,//1 6 5 2BACK
+            1, 5, 19, 0, 0, 0, 4, 0, 0, 3, 5, 19,  // 1 6 7 0 BOT
+            1, 5, 19, 1, 15, 19, 3, 15, 19, 3, 5, 19,//1 2 3 0 LEFT
+            0, 0, 0, 0, 20, 0, 4, 20, 0, 4, 0, 0,//6 5 4 7 RIGHT
+        ])/*
 
-
+            3, 5, 19,     //0 1 2 3 top
+            1, 5, 19,     //1
+            1, 15, 19,    //2
+            3, 15, 19,    //3
+            4, 20, 0,     //4
+            0, 20, 0,     //5
+            0, 0, 0,      //6
+            4, 0, 0])     //7 */
+    /*const indices = [ // 6caras x 2triangulos x3vertices = 36
+        1,6,5,    5,2,1,    // Front
+        0,1,3,    1,3,2,    // DER 
+        2,5,3,    4,3,5,  // TOP
+        6,7,4,    6,4,5, // IZQ
+        0,7,4,    4,3,0, // back
+        1,6,0,    7,0,6  // BOT
+            ];*/
     const indices = [
-        2,0,1,3,2,1, //top
-        7,4,5, 6,5,7, //front
-        9,11,8,10,9,8,//left
-        14,13,12,15,14,12, //right
-        18,17,16,19,18,16, //back
-        22,21,20,23,22,20//bottom
+        1, 0, 2, 1, 2, 3, //top
+        5, 4, 7, 5, 7, 6, //front
+        8, 11, 9, 8, 9, 10, //left
+        12, 13, 14, 12, 14, 15, //right
+        16, 17, 18, 16, 18, 19, //back
+        20, 21, 22, 20, 22, 23 //bottom
     ];
     let cero = new THREE.Vector3(3, 5, 19)
     let uno = new THREE.Vector3(1, 5, 19)
@@ -217,6 +210,8 @@ function crearRobot(material) {
     let cinco = new THREE.Vector3(0, 20, 0)
     let seis = new THREE.Vector3(0, 0, 0)
     let siete = new THREE.Vector3(4, 0, 0)
+
+
 
     let normal = [
         //0
@@ -256,41 +251,53 @@ function crearRobot(material) {
 
     ]
     normal = normal.flat()
+    console.log("Normal")
+    console.log(normal)
     console.log(new THREE.Float32BufferAttribute(normal, 3))
-    dedoIzqGeometry.setIndex(indices)
     dedoIzqGeometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3))
     dedoIzqGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3))
+    dedoIzqGeometry.setIndex(indices)
 
-    //dedoIzqGeometry.setAttribute('color', new THREE.BufferAttribute(color,3))
 
-    //Terminan los cambios
-    const materialRojo = new THREE.MeshBasicMaterial({ color: 'red' });
-    const dedoIzq = new THREE.Mesh(dedoIzqGeometry, material)
+    const pion = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false });
+    const dedoIzq = new THREE.Mesh(dedoIzqGeometry, pion)
 
-    console.log(dedoIzq)
+
     dedoIzq.rotation.y = Math.PI / 2
-    dedoIzq.position.set(18, 190, -8)
+    //dedoIzq.position.set(18, 190, -8)
+    //dedoIzq.position.set(0, 0, 0)
     pinzaIzq.add(dedoIzq)
     pinzaIzq.add(paralelipedo)
+    console.log('dedoIzq')
+    //pinzaIzq.position.set(0, 0, 0)
+    console.log(dedoIzq)
+    //dedoIzqGeometry.computeVertexNormals()
+    scene.add(dedoIzq)
 
-    dedoIzqGeometry.computeVertexNormals()
 
-    let pinzaDerecha = pinzaIzq.clone()
-    pinzaDerecha.translateZ(15)
+    /*
+    console.log('Disco')
+
+    console.log(disco)
+    */
+    //let pinzaDerecha = pinzaIzq.clone()
+    //pinzaDerecha.translateZ(15)
     mano.add(pinzaIzq)
-    mano.add(pinzaDerecha)
-
+    //mano.add(pinzaDerecha)
+    //let mano = crearMano(material)
+    //antebrazo.add(mano)
     antebrazo.add(mano)
     brazo.add(antebrazo)
     //Fin antebrazo
 
+    console.log('paralelipedo')
+
+    console.log(paralelipedo)
+
     robot.add(base)
     robot.add(brazo)
-    const axesHelper = new THREE.AxesHelper(200);
+    const axesHelper = new THREE.AxesHelper(20);
     scene.add(axesHelper);
-
-
-    //Prueba
     return robot
 }
 function crearBase(material) {
@@ -305,14 +312,14 @@ function crearBase(material) {
 function crearNervios(material) {
 
     let nervios = new THREE.Object3D()
-    let nerviosGeometry = new THREE.BoxBufferGeometry(4, 80, 4, 4 * 2, 80 * 2, 4 * 2)
+    let nerviosGeometry = new THREE.BoxBufferGeometry(4, 80, 4)
 
     const nervio1 = new THREE.Mesh(nerviosGeometry, material)
     nervio1.position.set(6, 160, -6)
     nervios.add(nervio1)
 
-    //let nerviosGeometry2 = new THREE.BoxBufferGeometry(4,80,4)
-    const nervio2 = new THREE.Mesh(nerviosGeometry, material)
+    let nerviosGeometry2 = new THREE.BoxBufferGeometry(4, 80, 4)
+    const nervio2 = new THREE.Mesh(nerviosGeometry2, material)
     nervio2.position.set(-6, 160, 6)
     nervios.add(nervio2)
 
@@ -329,9 +336,17 @@ function crearNervios(material) {
 }
 
 function calculateNormal(vecino1, vecino2, position) {
-    let tangent = new THREE.Vector3().subVectors(position,vecino1)
-    let bitangent = new THREE.Vector3().subVectors(position, vecino2)
+    let tangent = new THREE.Vector3().subVectors(vecino1, position)
+    let bitangent = new THREE.Vector3().subVectors(vecino2, position)
     let normal = new THREE.Vector3().crossVectors(tangent, bitangent).normalize()
     //normal = new THREE.Vector3(normalize(cross(tangent, bitangent)))
-    return normal//.multiply(new THREE.Vector3(-1,-1,-1))
+    /*
+    let angles = new
+
+        // the starting point will be the 'base' and the two adjacent points will be normalized against it
+        a1 = (p2 - p1).Angle(p3 - p1);    // p1 is the 'base' here
+        a2 = (p3 - p2).Angle(p1 - p2);    // p2 is the 'base' here
+        a3 = (p1 - p3).Angle(p2 - p3);    // p3 is the 'base' here
+*/
+    return normal //.multiply(new THREE.Vector3(-1,-1,-1))
 }
