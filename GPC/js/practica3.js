@@ -94,7 +94,7 @@ function loadScene() {
     const materialRobot = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
 
     // Suelo
-    let suelo = crearSuelo(1000, 1000, materialRobot)
+    let suelo = crearSuelo(1000, 1000, materialSuelo)
     scene.add(suelo)
     //Robot
     let robot = crearRobot(materialRobot)
