@@ -164,6 +164,17 @@ function loadCubo(lado)
 
 }                 
 
+/**
+ * The updateAspectRatio function updates the aspect ratio of the camera and renderer to match
+ * that of the window. This is necessary for when we resize our browser window, as it will
+ * change our aspect ratio, which in turn means we need to update our camera's projection matrix.
+ 
+ *
+ *
+ * @return The aspect ratio of the window
+ *
+ * @docauthor Trelent
+ */
 function updateAspectRatio()
 {
   renderer.setSize(window.innerWidth, window.innerHeight);

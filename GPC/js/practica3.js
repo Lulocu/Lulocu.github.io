@@ -200,12 +200,14 @@ function crearRobot(material) {
             0, 0, 0,      //6
             4, 0, 0])     //7
 
-    const indices = [ //36
-        0, 3, 7, 7, 3, 4, 0, 1, 2,
-        0, 2, 3, 4, 3, 2, 4, 2, 5,
-        6, 7, 4, 6, 4, 5, 1, 5, 2,
-        1, 6, 5, 7, 6, 1, 7, 1, 0
-    ]
+    const indices = [ // 6caras x 2triangulos x3vertices = 36
+        0,3,7,    7,3,4,    // Front
+        0,1,2,    0,2,3,    // Right 
+        4,3,2,    4,2,5,  // Back
+        6,7,4,    6,4,5, // Left
+        1,5,2,    1,6,5, // Top
+        7,6,1,    7,1,0  // Bottom
+            ];
     let normal = [
         //0
         calculateNormal(new THREE.Vector3(3, 15, 19), new THREE.Vector3(4, 0, 0), new THREE.Vector3(3, 5, 19)).toArray(), //x   
@@ -316,9 +318,9 @@ function crearNervios(material) {
 }
 
 function calculateNormal(vecino1, vecino2, position) {
-    let tangent = new THREE.Vector3().subVectors(vecino1, position)
-    let bitangent = new THREE.Vector3().subVectors(vecino2, position)
+    let tangent = new THREE.Vector3().subVectors(position,vecino1)
+    let bitangent = new THREE.Vector3().subVectors(position, vecino2)
     let normal = new THREE.Vector3().crossVectors(tangent, bitangent).normalize()
     //normal = new THREE.Vector3(normalize(cross(tangent, bitangent)))
-    return normal
+    return normal //.multiply(new THREE.Vector3(-1,-1,-1))
 }
