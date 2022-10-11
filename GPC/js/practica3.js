@@ -203,7 +203,7 @@ function crearRobot(material) {
 
     const indices = [
         2,0,1,3,2,1, //top
-        7,4,5, 6,5,7, //front
+        7,4,5, 6,7,5, //front
         9,11,8,10,9,8,//left
         14,13,12,15,14,12, //right
         18,17,16,19,18,16, //back

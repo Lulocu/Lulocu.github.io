@@ -134,12 +134,12 @@ const position =
 
 
     const indices = [
-        1, 0, 2, 1, 2, 3, //top
-        5, 4, 7, 5, 7, 6, //front
-        8, 11, 9, 8, 9, 10, //left
-        12, 13, 14, 12, 14, 15, //right
-        16, 17, 18, 16, 18, 19, //back
-        20, 21, 22, 20, 22, 23 //bottom
+        2,0,1,3,2,1, //top
+        7,4,5, 6,7,5, //front
+        9,11,8,10,9,8,//left
+        14,13,12,15,14,12, //right
+        18,17,16,19,18,16, //back
+        22,21,20,23,22,20//bottom
     ];
     let cero = new THREE.Vector3(3, 5, 19)
     let uno = new THREE.Vector3(1, 5, 19)
