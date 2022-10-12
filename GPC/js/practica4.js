@@ -11,6 +11,7 @@ import * as THREE from "../lib/three.module.js";
 import { OrbitControls } from "../lib/OrbitControls.module.js";
 import {TWEEN} from "../lib/tween.module.min.js";
 import {GUI} from "../lib/lil-gui.module.min.js";
+
 // Variables estandar
 let renderer, scene, camera;
 
@@ -19,9 +20,10 @@ let cameraControls;
 let cenital
 let L = 50
 let materialRobot
+let controles
 // Variables robot
 
-let brazo, antebrazo, base
+let robot, brazo, antebrazo, mano, nervio1,nervio2,nervio3,nervio4,pinzaIzq,pinzaDerecha,dedoIzq,base,paralelipedo,rotula,esparrago,eje,disco,rotor,paralelipedoDer,dedoDer
 // Acciones
 init();
 loadScene();
@@ -101,8 +103,8 @@ function loadScene() {
     let suelo = crearSuelo(1000, 1000, materialSuelo)
     scene.add(suelo)
     //Robot
-    let robot = crearRobot(materialRobot)
-    scene.add(robot)
+    crearRobot(materialRobot)
+    
 }
 
 function update()
@@ -142,57 +144,63 @@ function crearSuelo(width, height, material) {
 }
 
 function crearRobot(material) {
-    let robot = new THREE.Object3D()
-    base = crearBase(material);
+    robot = new THREE.Object3D()
+    scene.add(robot)
 
-    //const materialDebug = new THREE.MeshBasicMaterial({color:'green',wireframe:true});
+    let baseGeometry = new THREE.CylinderBufferGeometry(50, 50, 15)//, 50 * 2, 15 * 2)
+    base = new THREE.Mesh(baseGeometry, material)
+    base.position.set(0, 0, 0)
+    robot.add(base)
 
     //Brazo
     brazo = new THREE.Object3D()
-    let rotulaGeometry = new THREE.CylinderBufferGeometry(20, 20, 18, 20 * 2, 18 * 2)
-    const rotula = new THREE.Mesh(rotulaGeometry, material)
+    base.add(brazo)
+    let rotulaGeometry = new THREE.CylinderBufferGeometry(20, 20, 18)//, 20 * 2, 18 * 2)
+    rotula = new THREE.Mesh(rotulaGeometry, material)
     rotula.rotation.z = Math.PI / 2
     rotula.position.set(0, 0, 0)
     brazo.add(rotula)
 
-    let esparragoGeometry = new THREE.BoxBufferGeometry(18, 120, 12, 18 * 2, 120 * 2, 12 * 2)
-    const esparrago = new THREE.Mesh(esparragoGeometry, material)
+    let esparragoGeometry = new THREE.BoxBufferGeometry(18, 120, 12)//, 18 * 2, 120 * 2, 12 * 2)
+    esparrago = new THREE.Mesh(esparragoGeometry, material)
     esparrago.position.set(0, 60, 0)
     brazo.add(esparrago)
 
 
-    let ejeGeometry = new THREE.SphereBufferGeometry(20, 20 * 2, 20 * 2)
-    const eje = new THREE.Mesh(ejeGeometry, material)
+    let ejeGeometry = new THREE.SphereBufferGeometry(20)//, 20 * 2, 20 * 2)
+    eje = new THREE.Mesh(ejeGeometry, material)
     eje.position.set(0, 120, 0)
     brazo.add(eje)
     //Fin brazo
 
     //Antebrazo
     antebrazo = new THREE.Object3D()
+    
+    eje.add(antebrazo)
 
-    let discoGeometry = new THREE.CylinderBufferGeometry(22, 22, 6, 22 * 2, 6 * 2)
-    const disco = new THREE.Mesh(discoGeometry, material)
-    disco.position.set(0, 120, 0)
+
+    let discoGeometry = new THREE.CylinderBufferGeometry(22, 22, 6)//, 22 * 2, 6 * 2)
+    disco = new THREE.Mesh(discoGeometry, material)
+    //disco.position.set(0, 120, 0)
     antebrazo.add(disco)
 
     let nervios = crearNervios(material)
     antebrazo.add(nervios)
 
-    let rotorGeometry = new THREE.CylinderBufferGeometry(15, 15, 40, 15 * 2, 40 * 2)
-    const rotor = new THREE.Mesh(rotorGeometry, material)
+    mano = new THREE.Object3D()
+    antebrazo.add(mano)
+
+    let rotorGeometry = new THREE.CylinderBufferGeometry(15, 15, 40)//, 15 * 2, 40 * 2)
+    rotor = new THREE.Mesh(rotorGeometry, material)
     rotor.rotation.y = Math.PI / 2
     rotor.rotation.z = Math.PI / 2
-    rotor.position.set(0, 200, 0)
+    mano.position.set(0, 80, 0)
+    mano.add(rotor)
 
-    antebrazo.add(rotor)
-
-    let mano = new THREE.Object3D()
-
-    let pinzaIzq = new THREE.Object3D()
-    let paralelipedoGeometry = new THREE.BoxBufferGeometry(19, 20, 4, 19 * 2, 20 * 2, 4 * 2)
-    const paralelipedo = new THREE.Mesh(paralelipedoGeometry, material)
-    paralelipedo.position.set(9, 200, -10)
-
+    pinzaIzq = new THREE.Object3D()
+    let paralelipedoGeometry = new THREE.BoxBufferGeometry(19, 20, 4)//, 19 * 2, 20 * 2, 4 * 2)
+    paralelipedo = new THREE.Mesh(paralelipedoGeometry, material)
+    pinzaIzq.add(paralelipedo)
     //Empiezan los cambios
 
     const dedoIzqGeometry = new THREE.BufferGeometry()
@@ -209,12 +217,12 @@ function crearRobot(material) {
 
 
     const indices = [
-        2,0,1,3,2,1, //top
-        7,4,5, 6,7,5, //front
-        9,11,8,10,9,8,//left
-        14,13,12,15,14,12, //right
-        18,17,16,19,18,16, //back
-        22,21,20,23,22,20//bottom
+        2,0,1,3,2,1, //bot
+        4,5,7, 7,5,6, //izq //BIEN
+        9,11,8,9,8,10,//enfrente //izq el de arriba //o
+        13,12,14,15,14,12, //atras 14,13,12,15,14,12, //o
+        18,17,16,19,18,16, //back //invisible
+        22,21,20,23,22,20//arriba
     ];
     let cero = new THREE.Vector3(3, 5, 19)
     let uno = new THREE.Vector3(1, 5, 19)
@@ -268,67 +276,82 @@ function crearRobot(material) {
     dedoIzqGeometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3))
     dedoIzqGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3))
 
-    //dedoIzqGeometry.setAttribute('color', new THREE.BufferAttribute(color,3))
+    dedoIzq = new THREE.Mesh(dedoIzqGeometry, material)
 
-    //Terminan los cambios
-    const materialRojo = new THREE.MeshBasicMaterial({ color: 'red' });
-    const dedoIzq = new THREE.Mesh(dedoIzqGeometry, material)
-
-    console.log(dedoIzq)
     dedoIzq.rotation.y = Math.PI / 2
-    dedoIzq.position.set(18, 190, -8)
+    dedoIzq.position.set(9, -10, 2)
     pinzaIzq.add(dedoIzq)
-    pinzaIzq.add(paralelipedo)
+    pinzaIzq.rotateX(Math.PI / 2)
+    pinzaIzq.rotateZ(Math.PI / 2)
+    pinzaIzq.position.set(0, 10, 15)
 
-    dedoIzqGeometry.computeVertexNormals()
+    dedoDer = dedoIzq.clone()
+    paralelipedoDer =paralelipedo.clone()
+    pinzaDerecha= new THREE.Object3D()
+    pinzaDerecha.add(dedoDer)
+    pinzaDerecha.add(paralelipedoDer)
 
-    let pinzaDerecha = pinzaIzq.clone()
-    pinzaDerecha.translateZ(15)
-    mano.add(pinzaIzq)
-    mano.add(pinzaDerecha)
 
-    antebrazo.add(mano)
-    brazo.add(antebrazo)
+    pinzaDerecha.rotateX(Math.PI / 2)
+    pinzaDerecha.rotateZ(Math.PI / 2)
+    pinzaDerecha.position.set(0, 10, 15)
+
+
+    pinzaDerecha.translateZ(20)
+    rotor.add(pinzaIzq)
+    rotor.add(pinzaDerecha)
+    
+    //rotor.rotateX(Math.PI / 2)
+
     //Fin antebrazo
-
-    robot.add(base)
-    robot.add(brazo)
     const axesHelper = new THREE.AxesHelper(200);
     scene.add(axesHelper);
-
-
+    teclado()
     //Prueba
-    return robot
+    
 }
-function crearBase(material) {
 
-    let baseGeometry = new THREE.CylinderBufferGeometry(50, 50, 15, 50 * 2, 15 * 2)
-    let base = new THREE.Mesh(baseGeometry, material)
-    base.position.set(0, 0, 0)
+function teclado() {
+    var keyboard = new THREEx.KeyboardState(renderer.domElement);
+    renderer.domElement.setAttribute("tabIndex", "0");
+    renderer.domElement.focus();
 
-    return base
+    keyboard.domElement.addEventListener('keydown', function (event) {
+        if (keyboard.eventMatches(event, 'left')) {
+            robot.position.x -= 4;
+        }
+        if (keyboard.eventMatches(event, 'right')) {
+            robot.position.x += 4;
+        }
+        if (keyboard.eventMatches(event, 'up')) {
+            robot.position.z -= 4;
+        }
+        if (keyboard.eventMatches(event, 'down')) {
+            robot.position.z += 4;
+        }
+    })
 }
 
 function crearNervios(material) {
 
     let nervios = new THREE.Object3D()
-    let nerviosGeometry = new THREE.BoxBufferGeometry(4, 80, 4, 4 * 2, 80 * 2, 4 * 2)
+    let nerviosGeometry = new THREE.BoxBufferGeometry(4, 80, 4)//, 4 * 2, 80 * 2, 4 * 2)
 
-    const nervio1 = new THREE.Mesh(nerviosGeometry, material)
-    nervio1.position.set(6, 160, -6)
+    nervio1 = new THREE.Mesh(nerviosGeometry, material)
+    nervio1.position.set(6, 40, -6)
     nervios.add(nervio1)
 
     //let nerviosGeometry2 = new THREE.BoxBufferGeometry(4,80,4)
-    const nervio2 = new THREE.Mesh(nerviosGeometry, material)
-    nervio2.position.set(-6, 160, 6)
+    nervio2 = new THREE.Mesh(nerviosGeometry, material)
+    nervio2.position.set(-6, 40, 6)
     nervios.add(nervio2)
 
-    const nervio3 = new THREE.Mesh(nerviosGeometry, material)
-    nervio3.position.set(-6, 160, -6)
+    nervio3 = new THREE.Mesh(nerviosGeometry, material)
+    nervio3.position.set(-6, 40, -6)
     nervios.add(nervio3)
 
-    const nervio4 = new THREE.Mesh(nerviosGeometry, material)
-    nervio4.position.set(6, 160, 6)
+    nervio4 = new THREE.Mesh(nerviosGeometry, material)
+    nervio4.position.set(6, 40, 6)
     nervios.add(nervio4)
 
 
@@ -346,13 +369,13 @@ function calculateNormal(vecino1, vecino2, position) {
 function setupGui()
 {
     const gui = new GUI()
-    const controles = {
+    controles = {
         giroBaseY: 0.0,
         giroBrazoZ: 0.0,
         giroAntebrazoY: 0.0,
         giroAntebrazoZ: 0.0,
         giroPinzaZ: 0.0,
-        giroAperturaPinzaZ: 10.0,
+        giroAperturaPinzaZ: 15.0,
         alambre: false,
         animacion: function() {animacion()},
     }
@@ -380,17 +403,108 @@ function giroAntebrazoY() {
 }
 function giroAntebrazoZ() {
     antebrazo.rotation.z = (controles.giroAntebrazoZ * Math.PI)/180
+    //antebrazo.rotateX(controles.giroAntebrazoZ * Math.PI)
 }
 function giroPinzaZ() {
     mano.rotation.z = (controles.giroPinzaZ * Math.PI)/180
 }
 function giroAperturaPinzaZ() {
-    mano.rotation.z = (controles.giroAperturaPinzaZ * Math.PI)/180
+    //pinzaIzq.position.y = (controles.giroAperturaPinzaZ * Math.PI)/180
+    pinzaIzq.position.y = 0 + controles.giroAperturaPinzaZ
+    pinzaDerecha.position.y = 0 -controles.giroAperturaPinzaZ
 }
 function alambre() {
-    materialRobot = new THREE.MeshNormalMaterial({ wireframe: controles.alambre, flatshading: true });
-
+    console.log('AAAA')
+    materialRobot = new THREE.MeshNormalMaterial({ wireframe: controles.alambre, flatshading: !controles.alambre });
+    //let mate = new THREE.MeshBasicMaterial({ color: 'brown', opacity: 1.0, wireframe: true });
+    nervio1.material=materialRobot
+    nervio2.material=materialRobot
+    nervio3.material=materialRobot
+    nervio4.material=materialRobot
+    base.material=materialRobot
+    paralelipedo.material=materialRobot
+    rotula.material=materialRobot
+    esparrago.material=materialRobot
+    dedoIzq.material=materialRobot
+    eje.material=materialRobot
+    disco.material=materialRobot
+    rotor.material=materialRobot
+    pinzaIzq.material=materialRobot
+    paralelipedoDer.material=materialRobot
+    dedoDer.material=materialRobot
 }
 function animacion() {
     console.log('Animando')
+
+    const tween1 = new TWEEN.Tween( antebrazo.rotation ).
+    to( {x:[Math.PI],y:[0],z:[Math.PI/2]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween2 = new TWEEN.Tween( robot.translate ).
+    to( {x:[10],y:[0],z:[10]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Bezier ).
+    easing( TWEEN.Easing.Back.Out )
+
+    const tween3 = new TWEEN.Tween( robot.translate ).
+    to( {x:[20],y:[0],z:[20]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Bezier ).
+    easing( TWEEN.Easing.Elastic.InOut)
+
+    const tween4 = new TWEEN.Tween( brazo.rotation ).
+    to( {x:[15*Math.PI],y:[0],z:[Math.PI/2]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Bezier ).
+    easing( TWEEN.Easing.Bounce.InOut )
+
+    const tween5 = new TWEEN.Tween( base.rotation ).
+    to( {x:[Math.PI],y:[0],z:[2*Math.PI/2]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Circular.InOut )
+
+    const tween6 = new TWEEN.Tween( mano.rotation ).
+    to( {x:[9*Math.PI],y:[0],z:[Math.PI/2]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Back.InOut )
+
+    const tween7 = new TWEEN.Tween( robot.translate ).
+    to( {x:[Math.PI],y:[0],z:[0]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween8 = new TWEEN.Tween( antebrazo.rotation ).
+    to( {x:[0],y:[0],z:[0]}, 1000 ).
+    interpolation( TWEEN.Interpolation.CatmullRom ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween9 = new TWEEN.Tween( brazo.rotation ).
+    to( {x:[0],y:[0],z:[0]}, 1000 ).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween10 = new TWEEN.Tween( mano.rotation ).
+    to( {x:[0],y:[0],z:[0]}, 1000 ).
+    interpolation( TWEEN.Interpolation.CatmullRom ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween11 = new TWEEN.Tween( base.rotation ).
+    to( {x:[0],y:[0],z:[0]}, 1000 ).
+    interpolation( TWEEN.Interpolation.CatmullRom ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+
+    tween1.chain(tween2);
+    tween2.chain(tween3);
+    tween3.chain(tween4);
+    tween4.chain(tween5);
+    tween5.chain(tween6);
+    tween6.chain(tween7);
+    tween7.chain(tween8);
+    tween8.chain(tween9);
+    tween9.chain(tween10);
+    tween10.chain(tween11);
+
+
+    tween1.start();
+    console.log('Fin ANima')
+
 }
