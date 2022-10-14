@@ -8,17 +8,23 @@
 import * as THREE from "../lib/three.module.js";
 import { OrbitControls } from "../lib/OrbitControls.module.js";
 //import {TWEEN} from "../lib/tween.module.min.js";
-//import {GUI} from "../lib/lil-gui.module.min.js";
+import {GUI} from "../lib/lil-gui.module.min.js";
 
 //variables estandar
 let renderer, scene, camera;
 
 // Otras globales
 let cameraControls;
+let controlesGUI
 
+//variables para animaciones y zooms, etc
+let ladrillo5
+let base, ladrillos, mampara, tapas, tubos
+let ini_pos_base,ini_pos_ladrillos,ini_pos_mampara,ini_pos_tapas,ini_pos_tubos
 init();
 loadScene();
 render();
+setupGui()
 
 function init() 
 {
@@ -57,33 +63,74 @@ function render() {
     renderer.clear();
     renderer.render(scene, camera);
 }
+
+function setupGui()
+{
+    const gui = new GUI()
+    controlesGUI = {
+        ventilacion: false,
+        zoomLadrillo: function() {ladrillo()},
+        aperturaFigura: 0.0,
+        foto: function() {foto()},
+    }
+
+    //Construccion menu
+    const h = gui.addFolder("Caloret real")
+    h.add(controlesGUI, "foto").name("Ver Caloret real").listen().onChange(foto)
+    const g = gui.addFolder("Control presentación")
+    g.add(controlesGUI, "aperturaFigura", 0, 100.0, 0.5).name("Separar piezas").listen().onChange(aperturaFigura)
+    g.add(controlesGUI, "zoomLadrillo").name("Ver ladrillo").listen().onChange(ladrillo)
+    g.add(controlesGUI, "ventilacion").name("Ventilación").listen().onChange(ladrillo)
+}
+
 function crearCaloret() {
 
     let materialBase = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
     let materialCristal = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false, opacity: 0.10  });
     let materialJuntas = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
     let materialTubos = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false, opacity: 0.5  });
+    let materialPCM = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: true, });
 
     
     let caloret = new THREE.Object3D()
     scene.add(caloret)
     
-    let base = crearBase(materialBase)
+    base = crearBase(materialBase)
     caloret.add(base)
 
-    let mampara = crearMampara(materialCristal,materialJuntas)
+    ladrillos = crearLadrillos(materialPCM)
+    caloret.add(ladrillos)
+
+    mampara = crearMampara(materialCristal,materialJuntas)
     caloret.add(mampara)
 
-    let tapas = crearTapas(materialBase)
+    tapas = crearTapas(materialBase)
     caloret.add(tapas)
 
-    let tubos = crearTubos(materialTubos)
+    tubos = crearTubos(materialTubos)
     caloret.add(tubos)
-
+/*
+    scene.updateMatrixWorld(true);
+    ini_pos_base = base.getWorldPosition(base)
+    ini_pos_ladrillos = ladrillos.getWorldPosition(ladrillos)
+    ini_pos_mampara=mampara.getWorldPosition(mampara)
+    ini_pos_tapas = tapas.getWorldPosition(tapas)
+    ini_pos_tubos = tubos.getWorldPosition(tubos)
+*/
     const axesHelper = new THREE.AxesHelper(200);
     scene.add(axesHelper);
-
 }
+
+/**
+ * The crearBase function creates a base for the Caloret.
+ * 
+ *
+ * @param material Define the color of the base
+ *
+ * @return A Object3D representing the base
+ *
+ * @docauthor Trelent
+ */
 function crearBase(material) {
     let base = new THREE.Object3D()
     
@@ -103,6 +150,17 @@ function crearBase(material) {
     return base
 }
 
+/**
+ * The crearMampara function creates a mampara object.
+ * 
+ *
+ * @param materialCristal Specify the material of the glass
+ * @param materialJuntas Create the material of the joints
+ *
+ * @return  A Object3D representing the mampara
+ *
+ * @docauthor Trelent
+ */
 function crearMampara(materialCristal, materialJuntas) {
     let mampara = new THREE.Object3D()
     
@@ -147,6 +205,18 @@ function crearMampara(materialCristal, materialJuntas) {
 
     return mampara
 }
+/**
+ * The crearTapas function creates a new THREE.Object3D object that contains two
+ * meshes, one for each tapa of the caja. The function takes in a material as an
+ * argument and returns the newly created tapas object. 
+ 
+ *
+ * @param material Specify the color of the tapas
+ *
+ * @return  A Object3D representing the the two tapas of el caloret
+ *
+ * @docauthor Trelent
+ */
 function crearTapas(material) {
     let tapas = new THREE.Object3D()
     
@@ -167,24 +237,158 @@ function crearTapas(material) {
     return tapas
 }
 
+/**
+ * The crearTubos function creates a group of three cylinders and two caps.
+ * 
+ *
+ * @param material Specify the material used for the tubes
+ *
+ * @return  A Object3D representing the two tubes of ventilation
+ *
+ * @docauthor Trelent
+ */
 function crearTubos(material) {
     let tubos = new THREE.Object3D()
     
-    let tubosGeometry = new THREE.CylinderBufferGeometry(10,10,100)
+    let tubosGeometry = new THREE.CylinderBufferGeometry(10,10,45)
     let tubo1 = new THREE.Mesh(tubosGeometry, material)
     tubos.add(tubo1)
 
-    tubo1.translateX(-180)
-    tubo1.translateY(-45)
-    //tubo1.rotateX(Math.PI/2)
-    //tubo1.rotateZ(Math.PI/2)
+    tubo1.translateX(-220)
+    tubo1.translateY(15)
+    tubo1.rotateZ(Math.PI/2)
     
     let tapa2 = tubo1.clone()
-    tapa2.translateX(360)
+    tapa2.translateY(-440)
     tubos.add(tapa2)
     
     
     return tubos
+}
+
+function crearLadrillos(material) {
+    
+    let ladrillos = new THREE.Object3D()
+    let ladrilloBajo = ladrillosBajo(material)
+    ladrillos.add(ladrilloBajo)
+
+    let ladrilloArriba = ladrillosArriba(material)
+    ladrillos.add(ladrilloArriba)
+    
+    return ladrillos
+}
+function ladrillosBajo(material) {
+    let ladrillosBajo = new THREE.Object3D()
+
+    let ladrillosGeometry = new THREE.BoxGeometry(45,6,40)
+    let ladrillo1 = new THREE.Mesh(ladrillosGeometry, material)
+    ladrillosBajo.add(ladrillo1)
+
+    ladrillo1.translateX(-175)
+    ladrillo1.translateZ(4)
+    ladrillo1.translateY(10)
+    let ladrillo2 = ladrillo1.clone()
+    ladrillo2.translateX(50)
+    ladrillosBajo.add(ladrillo2)
+
+    ladrillosGeometry = new THREE.BoxGeometry(25,6,40)
+    let ladrillo3 = new THREE.Mesh(ladrillosGeometry, material)
+    //ladrillo2.translateX(50)
+    ladrillo3.translateZ(4)
+    ladrillo3.translateY(10)
+    ladrillo3.translateX(-87)
+    ladrillosBajo.add(ladrillo3)
+
+    let ladrillo4 = ladrillo1.clone()
+    ladrillo4.translateX(135)
+    ladrillosBajo.add(ladrillo4)
+
+    let ladrillo5 = ladrillo4.clone()
+    ladrillo5.translateX(50)
+    ladrillosBajo.add(ladrillo5)
+
+    let ladrillo6 = ladrillo3.clone()
+    ladrillo6.translateX(135)
+    ladrillosBajo.add(ladrillo6)
+
+    let ladrillo7 = ladrillo4.clone()
+    ladrillo7.translateX(140)
+    ladrillosBajo.add(ladrillo7)
+
+    let ladrillo8 = ladrillo7.clone()
+    ladrillo8.translateX(50)
+    ladrillosBajo.add(ladrillo8)
+
+
+    ladrillosGeometry = new THREE.BoxGeometry(20,6,40)
+    let ladrillo9 = new THREE.Mesh(ladrillosGeometry, material)
+    //ladrillo2.translateX(50)
+    ladrillo9.translateZ(4)
+    ladrillo9.translateY(10)
+    ladrillo9.translateX(187)
+    
+    ladrillosBajo.add(ladrillo9)
+
+    return ladrillosBajo
+}
+
+function ladrillosArriba(material) {
+    let ladrillosAlto = new THREE.Object3D()
+
+    let ladrillosGeometry = new THREE.BoxGeometry(45,6,35)
+    let ladrillo1 = new THREE.Mesh(ladrillosGeometry, material)
+    ladrillosAlto.add(ladrillo1)
+
+    ladrillo1.translateX(-175)
+    ladrillo1.translateZ(4)
+    ladrillo1.translateY(10)
+    let ladrillo2 = ladrillo1.clone()
+    ladrillo2.translateX(50)
+    ladrillosAlto.add(ladrillo2)
+
+    ladrillosGeometry = new THREE.BoxGeometry(25,6,35)
+    let ladrillo3 = new THREE.Mesh(ladrillosGeometry, material)
+    //ladrillo2.translateX(50)
+    ladrillo3.translateZ(4)
+    ladrillo3.translateY(10)
+    ladrillo3.translateX(-87)
+    ladrillosAlto.add(ladrillo3)
+
+    let ladrillo4 = ladrillo1.clone()
+    ladrillo4.translateX(135)
+    ladrillosAlto.add(ladrillo4)
+
+    ladrillo5 = ladrillo4.clone()
+    ladrillo5.translateX(50)
+    ladrillosAlto.add(ladrillo5)
+
+    let ladrillo6 = ladrillo3.clone()
+    ladrillo6.translateX(135)
+    ladrillosAlto.add(ladrillo6)
+
+    let ladrillo7 = ladrillo4.clone()
+    ladrillo7.translateX(140)
+    ladrillosAlto.add(ladrillo7)
+
+    let ladrillo8 = ladrillo7.clone()
+    ladrillo8.translateX(50)
+    ladrillosAlto.add(ladrillo8)
+
+
+    ladrillosGeometry = new THREE.BoxGeometry(20,6,35)
+    let ladrillo9 = new THREE.Mesh(ladrillosGeometry, material)
+    //ladrillo2.translateX(50)
+    ladrillo9.translateZ(4)
+    ladrillo9.translateY(10)
+    ladrillo9.translateX(187)
+    ladrillosAlto.add(ladrillo9)
+
+    ladrillosAlto.translateZ(-20)
+    ladrillosAlto.translateY(35)
+    ladrillosAlto.rotateX(Math.PI/2)
+
+
+    return ladrillosAlto
 }
 /**
  * The setupCamera function sets up the camera for the scene.
@@ -226,6 +430,20 @@ function updateAspectRatio() {
     camera.aspect = ar;
     camera.updateProjectionMatrix();
 
-    cenital.updateProjectionMatrix();
+}
 
+function foto() {
+    
+}
+
+function ladrillo() {
+    
+}
+
+function aperturaFigura() {
+    base.position.y = ini_pos_base.y + controlesGUI.aperturaFigura
+    mampara.position.y = 10 + controlesGUI.aperturaFigura
+    tapas.position.y = 200 + controlesGUI.aperturaFigura
+    tubos.position.y = 3000 + controlesGUI.aperturaFigura
+    ladrillos.position.y = 6000 + controlesGUI.aperturaFigura
 }
