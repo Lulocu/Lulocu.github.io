@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<!--
+    Proyecto pèrsonal GPC Luis López Cuerva
+-->
+
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <title> Caloret by Azalea </title>
+        <style>
+            body{ background-color: rgb(255, 255, 255);
+                  margin: 0px;
+                  overflow: hidden;
+                }
+            #info { 
+                position: absolute;
+                bottom: 0px;
+                left: 50 px;
+                width: 30%;
+                text-align: left;
+                z-index: 1;
+            }    
+        </style>
+    </head>
+    <body>
+
+        <div id="container"></div>
+
+        <div id="info">
+            <h2> Caloret</h2>
+        </div>
+        <!-- scripts de biblioteca -->
+        
+        <script type="importmap">
+           { 
+            "imports":{
+                "three": "./lib/three.module.js"
+            } 
+        } 
+        </script>
+
+        <!-- mi script -->
+        <script type="module" src="js/proyectoFinal.js"></script>
+    </body>
+</html>
