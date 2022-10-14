@@ -62,6 +62,7 @@ function crearCaloret() {
     let materialBase = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
     let materialCristal = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false, opacity: 0.10  });
     let materialJuntas = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
+    let materialTubos = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false, opacity: 0.5  });
 
     
     let caloret = new THREE.Object3D()
@@ -72,6 +73,12 @@ function crearCaloret() {
 
     let mampara = crearMampara(materialCristal,materialJuntas)
     caloret.add(mampara)
+
+    let tapas = crearTapas(materialBase)
+    caloret.add(tapas)
+
+    let tubos = crearTubos(materialTubos)
+    caloret.add(tubos)
 
     const axesHelper = new THREE.AxesHelper(200);
     scene.add(axesHelper);
@@ -140,7 +147,45 @@ function crearMampara(materialCristal, materialJuntas) {
 
     return mampara
 }
+function crearTapas(material) {
+    let tapas = new THREE.Object3D()
+    
+    let tapaGeometry = new THREE.BoxBufferGeometry(60,10,60)
+    let tapa1 = new THREE.Mesh(tapaGeometry, material)
+    tapas.add(tapa1)
 
+    tapa1.translateX(-205)
+    tapa1.translateY(25)
+    tapa1.rotateX(Math.PI/2)
+    tapa1.rotateZ(Math.PI/2)
+    
+    let tapa2 = tapa1.clone()
+    tapa2.translateY(-410)
+    tapas.add(tapa2)
+    
+    
+    return tapas
+}
+
+function crearTubos(material) {
+    let tubos = new THREE.Object3D()
+    
+    let tubosGeometry = new THREE.CylinderBufferGeometry(10,10,100)
+    let tubo1 = new THREE.Mesh(tubosGeometry, material)
+    tubos.add(tubo1)
+
+    tubo1.translateX(-180)
+    tubo1.translateY(-45)
+    //tubo1.rotateX(Math.PI/2)
+    //tubo1.rotateZ(Math.PI/2)
+    
+    let tapa2 = tubo1.clone()
+    tapa2.translateX(360)
+    tubos.add(tapa2)
+    
+    
+    return tubos
+}
 /**
  * The setupCamera function sets up the camera for the scene.
  * 
