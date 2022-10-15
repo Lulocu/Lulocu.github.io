@@ -7,7 +7,7 @@
 // Modulos necesarios
 import * as THREE from "../lib/three.module.js";
 import { OrbitControls } from "../lib/OrbitControls.module.js";
-//import {TWEEN} from "../lib/tween.module.min.js";
+import {TWEEN} from "../lib/tween.module.min.js";
 import {GUI} from "../lib/lil-gui.module.min.js";
 
 //variables estandar
@@ -18,9 +18,9 @@ let cameraControls;
 let controlesGUI
 
 //variables para animaciones y zooms, etc
-let ladrillo5
+let logo
 let base, ladrillos, mampara, tapas, tubos
-let ini_pos_base,ini_pos_ladrillos,ini_pos_mampara,ini_pos_tapas,ini_pos_tubos
+
 init();
 loadScene();
 render();
@@ -34,7 +34,7 @@ function init()
     document.getElementById('container').appendChild(renderer.domElement);
     renderer.setClearColor(0xAAAAAA);
     renderer.autoClear = false;
-
+    logo = crearLogo()
     // Instanciar el nodo raiz de la escena
     scene = new THREE.Scene();
 
@@ -54,14 +54,21 @@ function loadScene() {
     //scene.add(suelo)
     //Caloret
     crearCaloret()
+    azalea()
     
 }
 
 function render() {
     requestAnimationFrame(render);
-    //update();
+    update();
     renderer.clear();
     renderer.render(scene, camera);
+}
+
+function update()
+{
+    TWEEN.update();
+
 }
 
 function setupGui()
@@ -69,9 +76,9 @@ function setupGui()
     const gui = new GUI()
     controlesGUI = {
         ventilacion: false,
-        zoomLadrillo: function() {ladrillo()},
+        azalea: function() {azalea()},
         aperturaFigura: 0.0,
-        foto: function() {foto()},
+        foto: false,
     }
 
     //Construccion menu
@@ -79,8 +86,8 @@ function setupGui()
     h.add(controlesGUI, "foto").name("Ver Caloret real").listen().onChange(foto)
     const g = gui.addFolder("Control presentación")
     g.add(controlesGUI, "aperturaFigura", 0, 100.0, 0.5).name("Separar piezas").listen().onChange(aperturaFigura)
-    g.add(controlesGUI, "zoomLadrillo").name("Ver ladrillo").listen().onChange(ladrillo)
-    g.add(controlesGUI, "ventilacion").name("Ventilación").listen().onChange(ladrillo)
+    g.add(controlesGUI, "azalea").name("Azalea").listen().onChange(azalea)
+    g.add(controlesGUI, "ventilacion").name("Ventilación").listen().onChange(ventilacion)
 }
 
 function crearCaloret() {
@@ -109,14 +116,7 @@ function crearCaloret() {
 
     tubos = crearTubos(materialTubos)
     caloret.add(tubos)
-/*
-    scene.updateMatrixWorld(true);
-    ini_pos_base = base.getWorldPosition(base)
-    ini_pos_ladrillos = ladrillos.getWorldPosition(ladrillos)
-    ini_pos_mampara=mampara.getWorldPosition(mampara)
-    ini_pos_tapas = tapas.getWorldPosition(tapas)
-    ini_pos_tubos = tubos.getWorldPosition(tubos)
-*/
+
     const axesHelper = new THREE.AxesHelper(200);
     scene.add(axesHelper);
 }
@@ -358,7 +358,7 @@ function ladrillosArriba(material) {
     ladrillo4.translateX(135)
     ladrillosAlto.add(ladrillo4)
 
-    ladrillo5 = ladrillo4.clone()
+    let ladrillo5 = ladrillo4.clone()
     ladrillo5.translateX(50)
     ladrillosAlto.add(ladrillo5)
 
@@ -401,9 +401,9 @@ function ladrillosArriba(material) {
  */
 function setupCamera()
 {
+    logo.visible = true
     camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.set(130, 350, 100);
-    camera.lookAt(0, 100, 0);
 
     cameraControls = new OrbitControls(camera, renderer.domElement);
     cameraControls.target.set(0, 1, 0);
@@ -432,18 +432,144 @@ function updateAspectRatio() {
 
 }
 
-function foto() {
+function foto() 
+{
+    if (controlesGUI.foto == true) {
+
+    const geometry = new THREE.PlaneGeometry( 500, 500 );
+    const material = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
+    const plane = new THREE.Mesh( geometry, material );
+
+    plane.position.x = 2000
+    plane.position.y = 2001
+    plane.position.z = 2000
+    camera.position.set(2000, 2001, 2500);
+
+    camera.lookAt(2000,2001,2000)
+    cameraControls.enabled = false  
+    scene.add( plane );
+    console.log('Viendo foto')
+
+    }
+
+    else {
+        setupCamera()
+    }
+
     
 }
 
-function ladrillo() {
+function ventilacion() {
     
+}
+
+function azalea() {
+    console.log('Azalea')
+    cameraControls.enabled = false  
+    
+    logo.visible = true
+    scene.add(logo)
+    logo.position.set(4600,5150,4800)
+    
+    camera.position.set(5000, 5100, 5600);
+
+    camera.lookAt(5000,5000,5000)
+
+
+
+
+    animacion(logo)
+    //logo.visible = false
+    
+      
 }
 
 function aperturaFigura() {
-    base.position.y = ini_pos_base.y + controlesGUI.aperturaFigura
-    mampara.position.y = 10 + controlesGUI.aperturaFigura
-    tapas.position.y = 200 + controlesGUI.aperturaFigura
-    tubos.position.y = 3000 + controlesGUI.aperturaFigura
-    ladrillos.position.y = 6000 + controlesGUI.aperturaFigura
+    base.position.y = 0 - controlesGUI.aperturaFigura
+    mampara.position.y = 30 + controlesGUI.aperturaFigura/2
+    mampara.position.z = 28 + controlesGUI.aperturaFigura
+    //tapas.position.z = 200 + controlesGUI.aperturaFigura
+    tubos.position.y = 15 - controlesGUI.aperturaFigura
+    ladrillos.position.y = 4 + controlesGUI.aperturaFigura
+}
+
+function crearLogo() {
+    console.log('Creando logo')
+    let material = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
+
+    let logolocal = new THREE.Object3D()    
+    
+    let barraInfGeometry = new THREE.BoxBufferGeometry(70,10,10)
+    let barraInf = new THREE.Mesh(barraInfGeometry, material)
+    logolocal.add(barraInf)
+
+
+    let barraVertGeometry = new THREE.BoxBufferGeometry(10,10,130)
+    let barratVert = new THREE.Mesh(barraVertGeometry, material)
+    barratVert.translateX(30)
+    barratVert.translateY(60)
+    barratVert.rotateX(Math.PI/2)
+    logolocal.add(barratVert)
+
+    let barraDerGeometry = new THREE.BoxBufferGeometry(10,10,40)
+    let barratDer = new THREE.Mesh(barraDerGeometry, material)
+    barratDer.translateX(45)
+    barratDer.translateY(55)
+    barratDer.rotateY(Math.PI/2)
+    barratDer.rotateX(-Math.PI/5)
+    logolocal.add(barratDer)
+
+    let barraIzqGeometry = new THREE.BoxBufferGeometry(10,10,40)
+    let barratIzq = new THREE.Mesh(barraIzqGeometry, material)
+    barratIzq.translateX(15)
+    barratIzq.translateY(80)
+    barratIzq.rotateY(-Math.PI/2)
+    barratIzq.rotateX(-Math.PI/5)
+    logolocal.add(barratIzq)
+    
+    logolocal.position.set(0,0,0)
+
+    return logolocal
+}
+function animacion(logo) {
+
+    const tween1 = new TWEEN.Tween( logo.position ).
+    to( {x:[5200],y:[5150],z:[5100]}, 5000).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween2 = new TWEEN.Tween( logo.position ).
+    to( {x:[4300],y:[4450],z:[4700]}, 5000).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween3 = new TWEEN.Tween( logo.position ).
+    to( {x:[5200],y:[4850],z:[5200]}, 5000).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween4 = new TWEEN.Tween( logo.position ).
+    to( {x:[5000],y:[5000],z:[4600]}, 5000).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween5 = new TWEEN.Tween( logo.position ).
+    to( {x:[5000],y:[5000],z:[5300]}, 5000).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut )
+
+    const tween6 = new TWEEN.Tween( logo.position ).
+    to( {x:[5000],y:[5000],z:[5300]}, 2500).
+    interpolation( TWEEN.Interpolation.Linear ).
+    easing( TWEEN.Easing.Exponential.InOut ).onComplete(setupCamera)
+
+    tween1.chain(tween2);
+    tween2.chain(tween3);
+    tween3.chain(tween4);
+    tween4.chain(tween5);
+    tween5.chain(tween6);
+
+    tween1.start();
+    console.log('Fin ANima')
+    
 }
