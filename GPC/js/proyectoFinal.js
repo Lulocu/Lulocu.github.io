@@ -34,10 +34,14 @@ function init()
     document.getElementById('container').appendChild(renderer.domElement);
     renderer.setClearColor(0xAAAAAA);
     renderer.autoClear = false;
+    renderer.antialias = true;
+    renderer.shadowMap.enabled = true;
+    
     logo = crearLogo()
     // Instanciar el nodo raiz de la escena
     scene = new THREE.Scene();
 
+    crearLuces()
     // Instanciar la camara
     setupCamera();
 
@@ -45,16 +49,10 @@ function init()
 }
 
 function loadScene() {
-    // Definimos materiales //;ejor aqui no
-    //const materialSuelo = new THREE.MeshBasicMaterial({ color: 'yellow', wireframe: true });
-    //materialRobot = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
 
-    // Suelo
-    //let suelo = crearSuelo(1000, 1000, materialSuelo)
-    //scene.add(suelo)
     //Caloret
     crearCaloret()
-    azalea()
+    //azalea()
     
 }
 
@@ -71,33 +69,102 @@ function update()
 
 }
 
+function crearLuces() {
+    const ambiental = new THREE.AmbientLight(0x222222)
+    scene.add(ambiental)
+
+    const direccional = new THREE.DirectionalLight(0xFFFFFF,0.6);
+    direccional.position.set(0,120,0);
+    direccional.castShadow = true;
+    scene.add(direccional);
+    //scene.add(new THREE.CameraHelper(direccional.shadow.camera));
+
+    const direccionalInf = new THREE.DirectionalLight(0xFFFFFF,0.35);
+    direccionalInf.position.set(0,-120,-0);
+    direccionalInf.castShadow = true;
+    scene.add(direccionalInf);
+    //scene.add(new THREE.CameraHelper(direccionalInf.shadow.camera));
+
+    const focalFrontal = new THREE.SpotLight(0xFFFFFF,0.8);
+    focalFrontal.position.set(-300,50,200);
+    focalFrontal.target.position.set(0,0,0);
+    focalFrontal.angle= Math.PI/2;
+    focalFrontal.penumbra = 0.1;
+    focalFrontal.castShadow= true
+    focalFrontal.shadow.camera.far = 800;
+    focalFrontal.shadow.camera.fov = 200;
+    scene.add(focalFrontal);
+    //scene.add(new THREE.CameraHelper(focalFrontal.shadow.camera));
+
+    const focalTrasera = new THREE.SpotLight(0xFFFFFF,0.4);
+    focalTrasera.position.set(300,50,-200);
+    focalTrasera.target.position.set(0,0,0);
+    focalTrasera.angle= Math.PI/2;
+    focalTrasera.penumbra = 0.1;
+    focalTrasera.castShadow= true
+    focalTrasera.shadow.camera.far = 800;
+    focalTrasera.shadow.camera.fov = 200;
+    scene.add(focalTrasera);
+    scene.add(new THREE.CameraHelper(focalTrasera.shadow.camera));
+
+}
+
 function setupGui()
 {
     const gui = new GUI()
     controlesGUI = {
-        ventilacion: false,
         azalea: function() {azalea()},
         aperturaFigura: 0.0,
         foto: false,
+        video: false,
     }
 
     //Construccion menu
-    const h = gui.addFolder("Caloret real")
+    const h = gui.addFolder("Audivisuales")
     h.add(controlesGUI, "foto").name("Ver Caloret real").listen().onChange(foto)
+    h.add(controlesGUI, "video").name("¿Qué es Azalea?").listen().onChange(video)
+
     const g = gui.addFolder("Control presentación")
     g.add(controlesGUI, "aperturaFigura", 0, 100.0, 0.5).name("Separar piezas").listen().onChange(aperturaFigura)
     g.add(controlesGUI, "azalea").name("Azalea").listen().onChange(azalea)
-    g.add(controlesGUI, "ventilacion").name("Ventilación").listen().onChange(ventilacion)
 }
 
 function crearCaloret() {
+    const path = "./textures/"
 
-    let materialBase = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
-    let materialCristal = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false, opacity: 0.10  });
-    let materialJuntas = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
-    let materialTubos = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: false, opacity: 0.5  });
-    let materialPCM = new THREE.MeshNormalMaterial({ wireframe: true, flatshading: true, });
+    const texBase = new THREE.TextureLoader().load(path+"osb.jpg");
+    let materialBase = new THREE.MeshLambertMaterial({color:'white',map:texBase});
 
+    const texJuntas = new THREE.TextureLoader().load(path+"juntas.jpeg");
+    let materialJuntas = new THREE.MeshLambertMaterial({color:'white',map:texJuntas});
+
+
+    const texCristal = new THREE.TextureLoader().load(path+"glass.jpg");
+    let materialCristal = new THREE.MeshPhongMaterial({ 
+        color:'white',
+        specular:'gray',
+        //shininess: 30,
+        map: texCristal,
+        opacity: 0.65,
+        transparent: true,
+          });
+    
+    const texTubos = new THREE.TextureLoader().load(path+"tube.jpg");
+    let materialTubos = new THREE.MeshPhongMaterial({ 
+        color:'white',
+        specular:'gray',
+        shininess: 30,
+        map: texTubos,
+        });
+
+
+    const texPCM = new THREE.TextureLoader().load(path+"pcm.jpg");
+    let materialPCM = new THREE.MeshPhongMaterial({ 
+        //color:'white',
+        specular:'gray',
+        shininess: 30,
+        map: texPCM,
+        });
     
     let caloret = new THREE.Object3D()
     scene.add(caloret)
@@ -137,14 +204,17 @@ function crearBase(material) {
 
     let baseMaderaInfGeometry = new THREE.BoxBufferGeometry(400,10,60)
     let maderaInf = new THREE.Mesh(baseMaderaInfGeometry, material)
+
+    maderaInf.castShadow=true
+    //maderaInf.receiveShadow=true
+
     base.add(maderaInf)
 
     let maderaTrasera = maderaInf.clone(maderaInf)
     maderaTrasera.translateY(25)
     maderaTrasera.translateZ(-25)
     maderaTrasera.rotateX(Math.PI/2)
-    
-    console.log(maderaTrasera)
+
     base.add(maderaTrasera)
 
     return base
@@ -168,6 +238,7 @@ function crearMampara(materialCristal, materialJuntas) {
 
     let cristal1Geometry = new THREE.BoxBufferGeometry(380/3,4,50)
     let cristal1 = new THREE.Mesh(cristal1Geometry, materialCristal)
+
     mamparaInf.add(cristal1)
 
     let cristal2 = cristal1.clone()
@@ -181,6 +252,9 @@ function crearMampara(materialCristal, materialJuntas) {
     let junta1Geometry = new THREE.BoxBufferGeometry(10,8,50)
     let junta1 = new THREE.Mesh(junta1Geometry, materialJuntas)
     junta1.translateY(-2)
+    junta1.castShadow=true
+    junta1.receiveShadow=true
+
     mamparaInf.add(junta1)
 
     let junta2 = junta1.clone(junta1)
@@ -228,6 +302,9 @@ function crearTapas(material) {
     tapa1.translateY(25)
     tapa1.rotateX(Math.PI/2)
     tapa1.rotateZ(Math.PI/2)
+
+    tapa1.castShadow=true
+    tapa1.receiveShadow=true
     
     let tapa2 = tapa1.clone()
     tapa2.translateY(-410)
@@ -257,12 +334,15 @@ function crearTubos(material) {
     tubo1.translateX(-220)
     tubo1.translateY(15)
     tubo1.rotateZ(Math.PI/2)
+
+    tubo1.castShadow=true
+    tubo1.receiveShadow=true
+
     
     let tapa2 = tubo1.clone()
     tapa2.translateY(-440)
     tubos.add(tapa2)
-    
-    
+
     return tubos
 }
 
@@ -287,6 +367,11 @@ function ladrillosBajo(material) {
     ladrillo1.translateX(-175)
     ladrillo1.translateZ(4)
     ladrillo1.translateY(10)
+
+    ladrillo1.castShadow=true
+    ladrillo1.receiveShadow=true
+
+
     let ladrillo2 = ladrillo1.clone()
     ladrillo2.translateX(50)
     ladrillosBajo.add(ladrillo2)
@@ -297,6 +382,11 @@ function ladrillosBajo(material) {
     ladrillo3.translateZ(4)
     ladrillo3.translateY(10)
     ladrillo3.translateX(-87)
+
+    ladrillo3.castShadow=true
+    ladrillo3.receiveShadow=true
+
+
     ladrillosBajo.add(ladrillo3)
 
     let ladrillo4 = ladrillo1.clone()
@@ -327,6 +417,11 @@ function ladrillosBajo(material) {
     ladrillo9.translateY(10)
     ladrillo9.translateX(187)
     
+
+    ladrillo9.castShadow=true
+    ladrillo9.receiveShadow=true
+
+
     ladrillosBajo.add(ladrillo9)
 
     return ladrillosBajo
@@ -342,6 +437,11 @@ function ladrillosArriba(material) {
     ladrillo1.translateX(-175)
     ladrillo1.translateZ(4)
     ladrillo1.translateY(10)
+
+    ladrillo1.castShadow=true
+    ladrillo1.receiveShadow=true
+
+
     let ladrillo2 = ladrillo1.clone()
     ladrillo2.translateX(50)
     ladrillosAlto.add(ladrillo2)
@@ -352,6 +452,11 @@ function ladrillosArriba(material) {
     ladrillo3.translateZ(4)
     ladrillo3.translateY(10)
     ladrillo3.translateX(-87)
+
+    ladrillo3.castShadow=true
+    ladrillo3.receiveShadow=true
+
+
     ladrillosAlto.add(ladrillo3)
 
     let ladrillo4 = ladrillo1.clone()
@@ -381,9 +486,15 @@ function ladrillosArriba(material) {
     ladrillo9.translateZ(4)
     ladrillo9.translateY(10)
     ladrillo9.translateX(187)
+
+
+    ladrillo9.castShadow=true
+    ladrillo9.receiveShadow=true
+
+
     ladrillosAlto.add(ladrillo9)
 
-    ladrillosAlto.translateZ(-20)
+    ladrillosAlto.translateZ(-23)
     ladrillosAlto.translateY(35)
     ladrillosAlto.rotateX(Math.PI/2)
 
@@ -435,20 +546,27 @@ function updateAspectRatio() {
 function foto() 
 {
     if (controlesGUI.foto == true) {
+    controlesGUI.video = false
+    video()
+    const direccionalInf = new THREE.DirectionalLight(0xFFFFFF,0.6);
+    direccionalInf.position.set(2000,2001,2500);
+    direccionalInf.castShadow = true;
+    scene.add(direccionalInf);
 
-    const geometry = new THREE.PlaneGeometry( 500, 500 );
-    const material = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
-    const plane = new THREE.Mesh( geometry, material );
+    const texFoto = new THREE.TextureLoader().load("./textures/Caloret.png");
+    let materialFoto = new THREE.MeshLambertMaterial({color:'white',map:texFoto});
+
+    const geometry = new THREE.PlaneGeometry( 500, 200 );
+    const plane = new THREE.Mesh( geometry, materialFoto );
 
     plane.position.x = 2000
     plane.position.y = 2001
     plane.position.z = 2000
-    camera.position.set(2000, 2001, 2500);
+    camera.position.set(2000, 2001, 2500 );
 
     camera.lookAt(2000,2001,2000)
     cameraControls.enabled = false  
     scene.add( plane );
-    console.log('Viendo foto')
 
     }
 
@@ -459,9 +577,41 @@ function foto()
     
 }
 
-function ventilacion() {
+function video() 
+{
+    if (controlesGUI.video == true) {
+    controlesGUI.foto = false
+    foto()
+
+    let video = document.createElement('video');
+    video.src = "./textures/AV2.mp4";
+    video.load();
+    video.muted = true;
+    video.play();
+    const texvideo = new THREE.VideoTexture(video);
+
+    let materialFoto = new THREE.MeshBasicMaterial({color:'white',map:texvideo});
+    const geometry = new THREE.PlaneGeometry( 500, 200 );
+    const plane = new THREE.Mesh( geometry, materialFoto );
+
+    plane.position.x = 4000
+    plane.position.y = 4001
+    plane.position.z = 4000
+    camera.position.set(4000, 4001, 4500 );
+
+    camera.lookAt(4000,4001,4000)
+    //cameraControls.enabled = false  
+    scene.add( plane );
+
+    }
+
+    else {
+        setupCamera()
+    }
+
     
 }
+
 
 function azalea() {
     console.log('Azalea')
@@ -495,7 +645,7 @@ function aperturaFigura() {
 
 function crearLogo() {
     console.log('Creando logo')
-    let material = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0X049ef4, wireframe: false, flatshading: false });
 
     let logolocal = new THREE.Object3D()    
     
