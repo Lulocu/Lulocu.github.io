@@ -11,7 +11,6 @@ import * as THREE from "../lib/three.module.js";
 import { OrbitControls } from "../lib/OrbitControls.module.js";
 import {TWEEN} from "../lib/tween.module.min.js";
 import {GUI} from "../lib/lil-gui.module.min.js";
-import { BackSide, FrontSide } from "three";
 
 // Variables estandar
 let renderer, scene, camera;
@@ -52,18 +51,27 @@ function init() {
     //Crear luces
 
     //Ambiental
-    let luzAmbiental = new THREE.AmbientLight('white')
+    let luzAmbiental = new THREE.AmbientLight('yellow')
     //luzAmbiental.castShadow = true
     scene.add(luzAmbiental)
     //Direccional
-    let luzDireccional = new THREE.DirectionalLight(0XFFFFFF,0.5)
-    luzDireccional.position.set(0,100,0)
+    let luzDireccional = new THREE.DirectionalLight(0XFFFFFF,0.75)
+    luzDireccional.position.set(200,300,100)
     luzDireccional.castShadow = true
     scene.add(luzDireccional)
-
+    //scene.add(new THREE.CameraHelper(luzDireccional.shadow.camera));
     //Focal
 
-
+    const focal = new THREE.SpotLight(0xFFFFFF,0.75);
+    focal.position.set(400,300,50)
+    focal.target.position.set(0,0,0);
+    focal.angle= Math.PI/7;
+    focal.penumbra = 0.3;
+    focal.castShadow= true;
+    focal.shadow.camera.far = 2000;
+    focal.shadow.camera.fov = 80;
+    scene.add(focal);
+    //scene.add(new THREE.CameraHelper(focal.shadow.camera));
 
 
     // Instanciar la camara
@@ -129,38 +137,54 @@ function loadScene() {
     sueloTx.magFilter = THREE.LinearFilter
     sueloTx.minFilter = THREE.LinearFilter
 
-    const materialSuelo = new THREE.MeshBasicMaterial({ color: 0XFFFFFF, map:sueloTx });
+    const materialSuelo = new THREE.MeshStandardMaterial({ color: 0XFFFFFF, map:sueloTx });
 
 
     // Suelo
     let suelo = crearSuelo(1000, 1000, materialSuelo)
-    suelo.receiveShadow = true
-    suelo.castShadow = false
+
     scene.add(suelo)
 
     //Paredes:  Lambert + texttura superposicion
     let path = "./images/"
 
     const paredes = []
-    paredes.push( new THREE.MeshBasicMaterial({side: THREE.BackSide, map: new THREE.TextureLoader().load(path+ 'posx.jpg')}))
-    paredes.push( new THREE.MeshBasicMaterial({side: THREE.FrontSide, map: new THREE.TextureLoader().load(path+ 'negx.jpg')}))
 
-    paredes.push( new THREE.MeshBasicMaterial({side: THREE.BackSide, map: new THREE.TextureLoader().load(path+ 'posy.jpg')}))
-    paredes.push( new THREE.MeshBasicMaterial({side: THREE.FrontSide, map: new THREE.TextureLoader().load(path+ 'negy.jpg')}))
-
-    paredes.push( new THREE.MeshBasicMaterial({side: THREE.BackSide, map: new THREE.TextureLoader().load(path+ 'posz.jpg')}))
-    paredes.push( new THREE.MeshBasicMaterial({side: THREE.FrontSide, map: new THREE.TextureLoader().load(path+ 'negz.jpg')}))
-
+    paredes.push( new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        map: new THREE.TextureLoader().load(path+"posx.jpg")}) );
+paredes.push( new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        map: new THREE.TextureLoader().load(path+"negx.jpg")}) );
+paredes.push( new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        map: new THREE.TextureLoader().load(path+"posy.jpg")}) );
+paredes.push( new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        map: new THREE.TextureLoader().load(path+"negy.jpg")}) );
+paredes.push( new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        map: new THREE.TextureLoader().load(path+"posz.jpg")}) );
+paredes.push( new THREE.MeshBasicMaterial({side:THREE.BackSide,
+        map: new THREE.TextureLoader().load(path+"negz.jpg")}) );
 
     const habGeometry = new THREE.BoxGeometry(700,700,700)
     const hab = new THREE.Mesh(habGeometry,paredes)
+    hab.receiveShadow = true
     scene.add(hab)
 
 
     //Robot
-    materialRobot = new THREE.MeshNormalMaterial({ wireframe: false, flatshading: true });
 
-    crearRobot(materialRobot)
+    const texArriba = new THREE.TextureLoader().load(path+"dorada.jpg");
+    const texAbajo = new THREE.TextureLoader().load(path+"metal.png");
+    const rot = [ path+"posx.jpg", path+"negx.jpg",
+                      path+"posy.jpg", path+"negy.jpg",
+                      path+"posz.jpg", path+"negz.jpg"];
+    const texRot = new THREE.CubeTextureLoader().load(rot);
+
+    const materialArriba = new THREE.MeshLambertMaterial({color:'white',map:texArriba});
+    const materialAbajo = new THREE.MeshLambertMaterial({color:'white',map:texAbajo});
+    const materialRotula = new THREE.MeshPhongMaterial({color:'white',
+            specular:'gray',
+            shininess: 30,
+            envMap: texRot });
+    crearRobot(materialArriba,materialAbajo,materialRotula)
     
 }
 
@@ -197,36 +221,45 @@ function crearSuelo(width, height, material) {
     const suelo = new THREE.Mesh(new THREE.PlaneGeometry(width, height, width, height), material);
     suelo.rotation.x = -Math.PI / 2;
     suelo.position.y = -0.2;
+    suelo.receiveShadow = true
     return suelo
 }
 
-function crearRobot(material) {
+function crearRobot(materialArriba, materialAbajo, materialRotula) {
     robot = new THREE.Object3D()
     scene.add(robot)
 
     let baseGeometry = new THREE.CylinderBufferGeometry(50, 50, 15)//, 50 * 2, 15 * 2)
-    base = new THREE.Mesh(baseGeometry, material)
+    base = new THREE.Mesh(baseGeometry, materialAbajo)
     base.position.set(0, 0, 0)
+    base.castShadow = true
+    base.receiveShadow = true
     robot.add(base)
 
     //Brazo
     brazo = new THREE.Object3D()
     base.add(brazo)
     let rotulaGeometry = new THREE.CylinderBufferGeometry(20, 20, 18)//, 20 * 2, 18 * 2)
-    rotula = new THREE.Mesh(rotulaGeometry, material)
+    rotula = new THREE.Mesh(rotulaGeometry, materialAbajo) ///Este es mapa de entorno
     rotula.rotation.z = Math.PI / 2
     rotula.position.set(0, 0, 0)
+    rotula.castShadow = true
+    rotula.receiveShadow = true
     brazo.add(rotula)
 
     let esparragoGeometry = new THREE.BoxBufferGeometry(18, 120, 12)//, 18 * 2, 120 * 2, 12 * 2)
-    esparrago = new THREE.Mesh(esparragoGeometry, material)
+    esparrago = new THREE.Mesh(esparragoGeometry, materialAbajo)
     esparrago.position.set(0, 60, 0)
+    esparrago.castShadow = true
+    esparrago.receiveShadow = true
     brazo.add(esparrago)
 
 
     let ejeGeometry = new THREE.SphereBufferGeometry(20)//, 20 * 2, 20 * 2)
-    eje = new THREE.Mesh(ejeGeometry, material)
+    eje = new THREE.Mesh(ejeGeometry, materialRotula)
     eje.position.set(0, 120, 0)
+    eje.castShadow = true
+    eje.receiveShadow = true
     brazo.add(eje)
     //Fin brazo
 
@@ -237,26 +270,32 @@ function crearRobot(material) {
 
 
     let discoGeometry = new THREE.CylinderBufferGeometry(22, 22, 6)//, 22 * 2, 6 * 2)
-    disco = new THREE.Mesh(discoGeometry, material)
+    disco = new THREE.Mesh(discoGeometry, materialArriba)
     //disco.position.set(0, 120, 0)
+    disco.castShadow = true
+    disco.receiveShadow = true
     antebrazo.add(disco)
 
-    let nervios = crearNervios(material)
+    let nervios = crearNervios(materialArriba)
     antebrazo.add(nervios)
 
     mano = new THREE.Object3D()
     antebrazo.add(mano)
 
     let rotorGeometry = new THREE.CylinderBufferGeometry(15, 15, 40)//, 15 * 2, 40 * 2)
-    rotor = new THREE.Mesh(rotorGeometry, material)
+    rotor = new THREE.Mesh(rotorGeometry, materialArriba)
     rotor.rotation.y = Math.PI / 2
     rotor.rotation.z = Math.PI / 2
+    rotor.castShadow = true
+    rotor.receiveShadow = true
     mano.position.set(0, 80, 0)
     mano.add(rotor)
 
     pinzaIzq = new THREE.Object3D()
     let paralelipedoGeometry = new THREE.BoxBufferGeometry(19, 20, 4)//, 19 * 2, 20 * 2, 4 * 2)
-    paralelipedo = new THREE.Mesh(paralelipedoGeometry, material)
+    paralelipedo = new THREE.Mesh(paralelipedoGeometry, materialArriba)
+    paralelipedo.castShadow = true
+    paralelipedo.receiveShadow = true
     pinzaIzq.add(paralelipedo)
     //Empiezan los cambios
 
@@ -333,14 +372,16 @@ function crearRobot(material) {
     dedoIzqGeometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3))
     dedoIzqGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3))
 
-    dedoIzq = new THREE.Mesh(dedoIzqGeometry, material)
-
+    dedoIzq = new THREE.Mesh(dedoIzqGeometry, materialArriba)
+    dedoIzq.castShadow = true
+    dedoIzq.receiveShadow = true
     dedoIzq.rotation.y = Math.PI / 2
     dedoIzq.position.set(9, -10, 2)
     pinzaIzq.add(dedoIzq)
     pinzaIzq.rotateX(Math.PI / 2)
     pinzaIzq.rotateZ(Math.PI / 2)
     pinzaIzq.position.set(0, 10, 15)
+
 
     dedoDer = dedoIzq.clone()
     paralelipedoDer =paralelipedo.clone()
@@ -397,6 +438,8 @@ function crearNervios(material) {
 
     nervio1 = new THREE.Mesh(nerviosGeometry, material)
     nervio1.position.set(6, 40, -6)
+    nervio1.castShadow = true
+    nervio1.receiveShadow = true
     nervios.add(nervio1)
 
     //let nerviosGeometry2 = new THREE.BoxBufferGeometry(4,80,4)
